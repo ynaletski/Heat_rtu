@@ -16,35 +16,25 @@
 int ComPortICP=1;
 
 int quit=0;
-
-int MMI_addr = 0;
-int page_MMI = 9;
-
-/*
-int page_mmi_0 = 0; //Чистый светлый экран
-int page_mmi_1 = 1; //Чистый темный экран
-int page_mmi_2 = 2; //ВРФ Учет природного газа*/
-int page_mmi_3 = 3; //ВРФ Учет тепловой энергии
-/*int page_mmi_4 = 4; //Учет алкогольной продукции
-int page_mmi_5 = 5; //Управление резервуарами
-int page_mmi_6 = 6; //Учет сырой нефти
-int page_mmi_7 = 7; //ВРФ Учет расхода топлива
-int page_mmi_8 = 8; //ООО Факом Технолоджиз  "ESC"Меню
-int page_mmi_9 = 9; //ООО Факом Технолоджиз  "ESC"Меню
-*/
+//01.05.2020 YN -----\\//-----
+int MMI_addr = 1; //was: int MMI_addr = 0;
+//------------- -----//\\-----
+int page_mmi_2 = 2; //чистая страница
 unsigned char dis_buf[120];
 unsigned char KeyBuf[50];
 
 void KeyBoard();
 void DisplayClear();
 void DisplayMMI();
-void MmiPuts(int y, int x, char *str);
-int  MmiPrintf(int y, int x, char *format , ...);
 
 int display = 0;
 int str_dis=0;
 
-unsigned char ver[] = "Версия N2 02.02.2020 YN";
+char half_one[15];
+char half_too[15];
+int half_count=0;
+
+unsigned char ver[] = "Версия 01  Май.2020";
 
 #include "MD5.H"
 #include "MD5C.C"

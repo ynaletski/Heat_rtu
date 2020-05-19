@@ -60,7 +60,7 @@ unsigned char
   typ_pool,ind_dsp,mmi_pool,icp_lnt,flg_month,flg_auto,flg_init_arc,
   flg_arc_h,flg_arc_d,flg_min,flg_sec,flg_arc_clr, /* флаги вычисления, записи
 		      в архив, расчёта за минуту, усреднения входов */
-  avg_old,dlt_tm,cnt_cbr,mmi_flg_ver,icp_pool;
+  avg_old,dlt_tm,cnt_cbr,/*mmi_flg_ver,*/icp_pool;
 
 unsigned char cnt_init,icp_wr[3];/*признак периодической инициализации и счётчик*/
 unsigned char err[Max_error],flg_err[Max_error],ind_err,size_max,musor;
@@ -108,7 +108,7 @@ void AverageExpandParams (void);
 void ReadFromArchive (unsigned char bufer[]);
 void ReadFromMinArch (unsigned char bufer[]);
 void ReadFromEvents (unsigned char buf_com[]);
-void ClearDisplay ();
+/*void ClearDisplay ();*///nm
 void ViewError ();
 void ReadConfigModbus (unsigned char buf_com[]);
 void WriteConfigModbus(unsigned char buf_com[]);
@@ -162,8 +162,8 @@ void main (void)
   InitLib();X607_Init();
   /*InstallCom_3(9600L,8,0,1);*/
   /*InstallCom_1(9600L,8,0,1);InstallCom_2(9600L,8,0,1);*/
-  ClearDisplay();Enable5DigitLed();
-  Set5DigitLedIntensity(1);TimerOpen();/*InstallUserTimer(TickTimer);*/
+  /*ClearDisplay();Enable5DigitLed();Set5DigitLedIntensity(1);*///nm
+  TimerOpen();/*InstallUserTimer(TickTimer);*/
   for (i=0;i<Max_pnt;i++) RestoreBasicParameters(i);
   InitializeMain();ReinstallPort(1);ReinstallPort(2);ReinstallPort(3);
   if (Device.set_com==1) ReinstallPort(4);else
@@ -220,12 +220,19 @@ void main (void)
       if (VerifySum(Port[0].buf,Port[0].index-2)==1)
       {
 	if (icp_pool < 12) ReadFromICP(Prt.nmb_icp);else
+
+  if (Port[0].buf[0]==0x21 &&(icp_pool==16 || icp_pool==17))
+  //01.05.2020 YN -----\\//-----
+	  {if (step==0) {Display.evt=0;}} //was: Display.evt=0;
+  //------------- -----//\\-----
+  else
+
 	if (icp_pool == 15 || Display.suspend==1)
 	{ /*обработка ответа от MMI подключенного к СОМ1*/
 	  ViewParamToMMI(&param);
 	  ReadFromMMI(Port[0].buf,Port[0].index,param);
-	} else if (icp_pool == 18) ReadPageMMI(Port[0].buf);
-	if (mmi_flg_ver==1 && Display.evt==0) {Display.evt=3;mmi_flg_ver=0;}
+	} //else if (icp_pool == 18) ReadPageMMI(Port[0].buf);
+	//if (mmi_flg_ver==1 && Display.evt==0) {Display.evt=3;mmi_flg_ver=0;}
       } icp_pool=Port[0].index=0;
     } /* выдача запроса в Modbus подключенного к СОМ3 */
     if (Modbus.connect == 2 && Modbus.mode == 0 &&
@@ -290,7 +297,7 @@ void main (void)
       for (i=0;i<Max_icp_ain;i++) Ain[i].evt=0;
       for (i=0;i<Max_icp_aout;i++) if (Aout[i].evt<4) Aout[i].evt=0;
       for (i=0;i<Max_icp_dio;i++) Dio[i].evt=0;
-      mmi_flg_ver=1;/*проверка номера страницы индикатора*/
+      //mmi_flg_ver=1;/*проверка номера страницы индикатора*/
       for (k=0;k< Max_pnt;k++)
       { /*обработка накопленного типа данных-счётчики*/
 	for (i=0;i<Max_dyn;i++) if (main_dyn[i][2] == 2)
@@ -1407,17 +1414,17 @@ void ReadFromEvents (unsigned char buf_com[])
     buf_com[9]=adr_evt-buf_com[8]*256;
 }
 /*********** очистка дисплея-индикатора ошибок *******************/
-void ClearDisplay ()
+/*void ClearDisplay ()
 {
   unsigned char i;
   for (i=1;i<6;i++) Show5DigitLedSeg(i,0x0);
-}
+}*///nm
 /*********** визуализация ошибок *********************************/
 void ViewError ()
 {
-   const unsigned char str[3]={0x4f,0x5,0x5};
+   /*const unsigned char str[3]={0x4f,0x5,0x5};*///nm
    unsigned char i,buf[16];
-   if (ind_err>=Max_error) {ind_err=0;ClearDisplay();}/*визуализация ошибки*/
+   if (ind_err>=Max_error) {ind_err=0;}/*ClearDisplay();*///nm}/*визуализация ошибки*/
  M: if (err[ind_err] < 10)
     {
       if (flg_err[ind_err] != 0)
@@ -1431,9 +1438,13 @@ void ViewError ()
       {
 	flg_err[ind_err]=1;FormateEvent(buf);buf[10]=1;buf[13]=ind_err+1;
 	WriteEvent(buf,2);/*запись об установке нештатной ситуации*/
-      } for (i=0;i<3;i++) Show5DigitLedSeg(i+1,str[i]);
-      i=(ind_err+1)/10;Show5DigitLed(4,i);i=ind_err+1-i*10;
-      Show5DigitLed(5,i);ind_err++;
+      } 
+      /*for (i=0;i<3;i++) Show5DigitLedSeg(i+1,str[i]);*///nm
+      i=(ind_err+1)/10;
+      /*Show5DigitLed(4,i);*///nm
+      i=ind_err+1-i*10;
+      /*Show5DigitLed(5,i);*///nm
+      ind_err++;
     }
 }
 /************ возвращает конфигур.страницу Modbus ****************/
